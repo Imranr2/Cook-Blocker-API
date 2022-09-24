@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Imanr2/Restaurant_API/internal/database"
-	"github.com/Imanr2/Restaurant_API/user"
+	"github.com/Imanr2/Restaurant_API/internal/user"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 	"gorm.io/driver/mysql"
