@@ -1,11 +1,14 @@
 package application
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/Imanr2/Restaurant_API/internal/database"
+	"github.com/Imanr2/Restaurant_API/user"
+	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -15,12 +18,16 @@ type Application struct {
 	Router *mux.Router
 }
 
+var userManager user.UserManager
+
 func (app *Application) Initialize(dbConfig database.DBConfig) {
-	_, err := getDB(dbConfig)
+	db, err := getDB(dbConfig)
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	userManager = user.NewUserManager(db)
 
 	app.Router = mux.NewRouter()
 
@@ -28,7 +35,34 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 }
 
 func (app *Application) InitializeRoutes() {
+	app.Router.HandleFunc("/register", app.Register).Methods("POST")
+}
 
+func (app *Application) Register(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var registerRequest user.RegisterRequest
+	json.NewDecoder(r.Body).Decode(&registerRequest)
+
+	validate := validator.New()
+	err := validate.Struct(registerRequest)
+
+	if err != nil {
+		resp := user.RegisterResponse{
+			ErrorCode: 1,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp, err := userManager.Register(registerRequest)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (app *Application) Run() {
