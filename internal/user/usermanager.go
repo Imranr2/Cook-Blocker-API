@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/Imanr2/Restaurant_API/session"
+	"github.com/Imanr2/Restaurant_API/internal/session"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
