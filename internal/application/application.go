@@ -36,6 +36,39 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 
 func (app *Application) InitializeRoutes() {
 	app.Router.HandleFunc("/register", app.Register).Methods("POST")
+	app.Router.HandleFunc("/login", app.Login).Methods("POST")
+}
+
+func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var loginRequest user.LoginRequest
+	json.NewDecoder(r.Body).Decode(&loginRequest)
+
+	validate := validator.New()
+	err := validate.Struct(loginRequest)
+
+	if err != nil {
+		resp := user.LoginResponse{
+			ErrorCode: 1,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	jwt, resp, err := userManager.Login(loginRequest)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	json.NewEncoder(w).Encode(resp)
+	http.SetCookie(w, &http.Cookie{
+		Name:    "token",
+		Value:   jwt.TokenString,
+		Expires: jwt.ExpirationTime,
+	})
 }
 
 func (app *Application) Register(w http.ResponseWriter, r *http.Request) {

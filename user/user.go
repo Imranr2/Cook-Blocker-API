@@ -7,6 +7,16 @@ type User struct {
 	Role     string `json:"role"`
 }
 
+type LoginRequest struct {
+	Username string `json:"username" validate:"required,max=32"`
+	Password string `json:"password" validate:"required,min=8"`
+}
+
+type LoginResponse struct {
+	ErrorCode int    `json:"errorCode"`
+	Error     string `json:"error"`
+}
+
 type RegisterRequest struct {
 	Username string `json:"username" validate:"required,max=32"`
 	Password string `json:"password" validate:"required,min=8"`
@@ -19,8 +29,6 @@ type RegisterResponse struct {
 	Error     string `json:"error"`
 }
 
-func (user *User) TableName() string { // implements Tabler interface
+func (user *User) TableName() string {
 	return "user_tab"
 }
-
-// If struct name is user -> table that gorm creates will be called "user_tab"
