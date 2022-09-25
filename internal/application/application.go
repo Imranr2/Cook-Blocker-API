@@ -8,6 +8,7 @@ import (
 
 	"github.com/Imanr2/Restaurant_API/internal/database"
 	"github.com/Imanr2/Restaurant_API/internal/menuitem"
+	"github.com/Imanr2/Restaurant_API/internal/order"
 	"github.com/Imanr2/Restaurant_API/internal/session"
 	"github.com/Imanr2/Restaurant_API/internal/user"
 	"github.com/go-playground/validator"
@@ -43,7 +44,13 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 }
 
 func (app *Application) InitialMigration(database *gorm.DB) error {
-	err := database.AutoMigrate(&user.User{}, &menuitem.MenuItem{}, &menuitem.Ingredient{})
+	err := database.AutoMigrate(
+		&user.User{},
+		&menuitem.MenuItem{},
+		&menuitem.Ingredient{},
+		&order.Order{},
+		&order.OrderItem{},
+	)
 	return err
 }
 
@@ -74,7 +81,7 @@ func (app *Application) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	var deleteRequest menuitem.DeleteRequest
-	deleteRequest.Id = params["id"]
+	deleteRequest.ID = params["id"]
 
 	resp, err := menuItemManager.DeleteMenuItem(deleteRequest)
 	if err != nil {
@@ -118,7 +125,7 @@ func (app *Application) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	var getRequest menuitem.GetWithIDRequest
-	getRequest.Id = params["id"]
+	getRequest.ID = params["id"]
 
 	if err != nil {
 		resp := menuitem.GetWithIDResponse{
@@ -165,7 +172,7 @@ func (app *Application) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createRequest.UserId = userId
+	createRequest.UserID = userId
 	resp, err := menuItemManager.CreateMenuItem(createRequest)
 
 	if err != nil {

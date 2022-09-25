@@ -36,7 +36,7 @@ func (m *MenuItemManagerImpl) GetMenuItems() (resp GetResponse, err error) {
 
 func (m *MenuItemManagerImpl) GetMenuItemWithID(req GetWithIDRequest) (resp GetWithIDResponse, err error) {
 	var menuItem MenuItem
-	err = m.database.Model(&MenuItem{}).Preload("Ingredients").First(&menuItem, req.Id).Error
+	err = m.database.Model(&MenuItem{}).Preload("Ingredients").First(&menuItem, req.ID).Error
 	if err != nil {
 		resp.Error = err.Error()
 		resp.ErrorCode = 3
@@ -59,7 +59,7 @@ func (m *MenuItemManagerImpl) CreateMenuItem(req CreateRequest) (resp CreateResp
 		Description: req.Description,
 		Price:       req.Price,
 		Steps:       req.Steps,
-		CreatedBy:   req.UserId,
+		CreatedBy:   req.UserID,
 		Ingredients: ingredients,
 	}
 
@@ -73,7 +73,7 @@ func (m *MenuItemManagerImpl) CreateMenuItem(req CreateRequest) (resp CreateResp
 
 func (m *MenuItemManagerImpl) DeleteMenuItem(req DeleteRequest) (resp DeleteResponse, err error) {
 	var menuItem MenuItem
-	err = m.database.First(&menuItem, req.Id).Error
+	err = m.database.First(&menuItem, req.ID).Error
 	if err != nil {
 		resp.Error = err.Error()
 		resp.ErrorCode = 3
@@ -87,7 +87,7 @@ func (m *MenuItemManagerImpl) DeleteMenuItem(req DeleteRequest) (resp DeleteResp
 		return
 	}
 
-	err = m.database.Delete(&menuItem, req.Id).Error
+	err = m.database.Delete(&menuItem, req.ID).Error
 	if err != nil {
 		resp.Error = err.Error()
 		resp.ErrorCode = 3

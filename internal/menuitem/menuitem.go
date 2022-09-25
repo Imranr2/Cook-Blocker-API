@@ -7,7 +7,7 @@ import (
 )
 
 type MenuItem struct {
-	ID          uint          `json:"-" gorm:"primaryKey"`
+	ID          uint          `json:"id" gorm:"primaryKey"`
 	Name        string        `json:"name" gorm:"index;unique;not null"`
 	Description string        `json:"desc" gorm:"not null"`
 	Steps       string        `json:"steps" gorm:"not null"`
@@ -20,7 +20,7 @@ type MenuItem struct {
 }
 
 type GetWithIDRequest struct {
-	Id string `json:"id" validate:"required"`
+	ID string `json:"id" validate:"required"`
 }
 
 type GetWithIDResponse struct {
@@ -36,7 +36,7 @@ type GetResponse struct {
 }
 
 type CreateRequest struct {
-	UserId      uint
+	UserID      uint
 	Name        string       `json:"name" validate:"required"`
 	Description string       `json:"desc" validate:"required"`
 	Price       float32      `json:"price" validate:"required"`
@@ -50,7 +50,7 @@ type CreateResponse struct {
 }
 
 type DeleteRequest struct {
-	Id string `json:"id" validate:"required"`
+	ID string `json:"id" validate:"required"`
 }
 
 type DeleteResponse struct {
