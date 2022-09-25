@@ -13,7 +13,7 @@ type MenuItem struct {
 	Price       float32       `gorm:"not null"`
 	CreatedBy   int           `gorm:"not null"`
 	Ingredients []*Ingredient `gorm:"many2many:menu_item_ingredients"`
-	User        user.User     `gorm:"foreignKey:CreatedBy;not null"`
+	User        user.User     `json:"-" gorm:"foreignKey:CreatedBy;not null"`
 	CreatedAt   time.Time     `gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt   time.Time     `gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
 }
@@ -23,14 +23,19 @@ type GetWithIDRequest struct {
 }
 
 type GetWithIDResponse struct {
-	Item MenuItem `json:"item"`
+	Item      MenuItem `json:"item"`
+	ErrorCode int      `json:"errorCode"`
+	Error     string   `json:"error"`
 }
 
 type GetResponse struct {
-	Items []MenuItem `json:"items"`
+	MenuItems []MenuItem `json:"menuItems"`
+	ErrorCode int        `json:"errorCode"`
+	Error     string     `json:"error"`
 }
 
 type CreateRequest struct {
+	UserId      uint
 	Name        string  `json:"name" validate:"required"`
 	Description string  `json:"desc" validate:"required"`
 	Price       float32 `json:"price" validate:"required"`
@@ -42,7 +47,8 @@ type CreateResponse struct {
 }
 
 type DeleteRequest struct {
-	Id int `json:"id" validate:"required"`
+	UserId uint
+	Id     int `json:"id" validate:"required"`
 }
 
 type DeleteResponse struct {

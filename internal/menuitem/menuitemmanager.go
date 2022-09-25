@@ -5,7 +5,7 @@ import (
 )
 
 type MenuItemManager interface {
-	GetMenuItem() (GetResponse, error)
+	GetMenuItems() (GetResponse, error)
 	GetMenuItemWithID(GetWithIDRequest) (GetWithIDResponse, error)
 	CreateMenuItem(CreateRequest) (CreateResponse, error)
 	DeleteMenuItem(DeleteRequest) (DeleteResponse, error)
@@ -21,7 +21,7 @@ func NewMenuItemManager(database *gorm.DB) MenuItemManager {
 	}
 }
 
-func (m *MenuItemManagerImpl) GetMenuItem() (resp GetResponse, err error) {
+func (m *MenuItemManagerImpl) GetMenuItems() (resp GetResponse, err error) {
 	return
 }
 
