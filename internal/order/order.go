@@ -65,3 +65,12 @@ type CompleteResponse struct {
 	ErrorCode int    `json:"errorCode"`
 	Error     string `json:"error"`
 }
+
+type DeleteRequest struct {
+	ID string `json:"id" validate:"required"`
+}
+
+type DeleteResponse struct {
+	ErrorCode int    `json:"errorCode"`
+	Error     string `json:"error"`
+}

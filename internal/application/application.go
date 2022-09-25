@@ -72,6 +72,7 @@ func (app *Application) InitializeRoutes() {
 	app.Router.HandleFunc("/order/{id}", app.GetOrderWithID).Methods("GET")
 	app.Router.HandleFunc("/order", app.CreateOrder).Methods("POST")
 	app.Router.HandleFunc("/order/{id}", app.CompleteOrder).Methods("PUT")
+	app.Router.HandleFunc("/order/{id}", app.DeleteOrder).Methods("DELETE")
 }
 
 func (app *Application) GetOrders(w http.ResponseWriter, r *http.Request) {
@@ -176,6 +177,30 @@ func (app *Application) CompleteOrder(w http.ResponseWriter, r *http.Request) {
 	completeRequest.ID = params["id"]
 
 	resp, err := orderManager.CompleteOrder(completeRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) DeleteOrder(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := order.DeleteResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var deleteRequest order.DeleteRequest
+	deleteRequest.ID = params["id"]
+
+	resp, err := orderManager.DeleteOrder(deleteRequest)
 	if err != nil {
 		log.Println(err)
 	}

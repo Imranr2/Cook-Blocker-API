@@ -9,6 +9,7 @@ type OrderManager interface {
 	GetOrderWithID(GetWithIDRequest) (GetWithIDResponse, error)
 	CreateOrder(CreateRequest) (CreateResponse, error)
 	CompleteOrder(CompleteRequest) (CompleteResponse, error)
+	DeleteOrder(DeleteRequest) (resp DeleteResponse, err error)
 }
 
 type OrderManagerImpl struct {
@@ -78,5 +79,9 @@ func (m *OrderManagerImpl) CompleteOrder(req CompleteRequest) (resp CompleteResp
 		resp.ErrorCode = 3
 		return
 	}
+	return
+}
+
+func (m *OrderManagerImpl) DeleteOrder(req DeleteRequest) (resp DeleteResponse, err error) {
 	return
 }
