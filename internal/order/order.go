@@ -23,7 +23,7 @@ type OrderItem struct {
 	ID         uint              `json:"-" gorm:"primaryKey"`
 	Qty        uint              `json:"qty" validate:"required" gorm:"not null"`
 	OrderID    uint              `json:"orderID"`
-	MenuItemID uint              `json:"menuItemID" gorm:"not null"`
+	MenuItemID uint              `json:"menuItemId" gorm:"not null"`
 	MenuItem   menuitem.MenuItem `json:"menuItem" gorm:"foreignKey:MenuItemID;not null"`
 	CreatedAt  time.Time         `json:"-" gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt  time.Time         `json:"-" gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
@@ -46,11 +46,10 @@ type GetResponse struct {
 }
 
 type CreateRequest struct {
-	UserID      uint
-	TableID     uint        `json:"tableId" validate:"required"` //TODO Add table model
-	Price       float64     `json:"price" validate:"required"`
-	IsCompleted bool        `json:"isCompleted" validate:"required"`
-	OrderItems  []OrderItem `json:"orderItems" validate:"required,dive"`
+	UserID     uint
+	TableID    uint        `json:"tableId" validate:"required"` //TODO Add table model
+	Price      float64     `json:"price" validate:"required"`
+	OrderItems []OrderItem `json:"orderItems" validate:"required,dive"`
 }
 
 type CreateResponse struct {

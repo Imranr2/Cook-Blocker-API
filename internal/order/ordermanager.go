@@ -23,18 +23,19 @@ func NewOrderManager(database *gorm.DB) OrderManager {
 
 func (m *OrderManagerImpl) GetOrders() (resp GetResponse, err error) {
 	var orders []Order
-	err = m.database.Model(&Order{}).Preload("OrderItems").Find(&orders).Error
+	err = m.database.Model(&Order{}).Preload("OrderItems.MenuItem").Find(&orders).Error
 	if err != nil {
 		resp.Error = err.Error()
 		resp.ErrorCode = 3
 		return
 	}
+	resp.Orders = orders
 	return
 }
 
 func (m *OrderManagerImpl) GetOrderWithID(req GetWithIDRequest) (resp GetWithIDResponse, err error) {
 	var order Order
-	err = m.database.Model(&Order{}).Preload("OrderItems").First(&order, req.ID).Error
+	err = m.database.Model(&Order{}).Preload("OrderItems.MenuItem").First(&order, req.ID).Error
 	if err != nil {
 		resp.Error = err.Error()
 		resp.ErrorCode = 3
@@ -46,7 +47,19 @@ func (m *OrderManagerImpl) GetOrderWithID(req GetWithIDRequest) (resp GetWithIDR
 }
 
 func (m *OrderManagerImpl) CreateOrder(req CreateRequest) (resp CreateResponse, err error) {
+	newOrder := &Order{
+		TableID:     req.TableID,
+		UserID:      req.UserID,
+		Price:       req.Price,
+		IsCompleted: false,
+		OrderItems:  req.OrderItems,
+	}
 
+	err = m.database.Create(&newOrder).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+	}
 	return
 }
 
