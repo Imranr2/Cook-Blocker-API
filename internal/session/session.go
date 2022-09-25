@@ -3,15 +3,19 @@ package session
 import (
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
 )
 
-var jwtKey = []byte("my_secret_key")
+const JWT_KEY = "JWT_KEY"
+
+var jwtKey []byte
 
 type Claims struct {
-	Username string `json:"username"`
+	Id uint `json:"id"`
 	jwt.StandardClaims
 }
 
@@ -20,11 +24,16 @@ type Session struct {
 	ExpirationTime time.Time
 }
 
-func GenerateToken(username string) (Session, error) {
+func init() {
+	godotenv.Load("../.env")
+	jwtKey = []byte(os.Getenv(JWT_KEY))
+}
+
+func GenerateToken(id uint) (Session, error) {
 	expirationTime := time.Now().Add(5 * time.Minute)
 
 	claims := &Claims{
-		Username: username,
+		Id: id,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -42,7 +51,7 @@ func GenerateToken(username string) (Session, error) {
 	}, nil
 }
 
-func VerifyToken(token string) error {
+func VerifyToken(token string) (uint, error) {
 	claims := &Claims{}
 
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
@@ -50,14 +59,14 @@ func VerifyToken(token string) error {
 	})
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if !tkn.Valid {
-		return errors.New("Token has expired")
+		return 0, errors.New("Token has expired")
 	}
 
-	return nil
+	return claims.Id, nil
 }
 
 func GetToken(r *http.Request) (string, error) {

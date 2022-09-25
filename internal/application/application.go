@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/Imanr2/Restaurant_API/internal/database"
+	"github.com/Imanr2/Restaurant_API/internal/menuitem"
+	"github.com/Imanr2/Restaurant_API/internal/session"
 	"github.com/Imanr2/Restaurant_API/internal/user"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
@@ -19,6 +21,7 @@ type Application struct {
 }
 
 var userManager user.UserManager
+var menuItemManager menuitem.MenuItemManager
 
 func (app *Application) Initialize(dbConfig database.DBConfig) {
 	db, err := getDB(dbConfig)
@@ -32,6 +35,7 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 	}
 
 	userManager = user.NewUserManager(db)
+	menuItemManager = menuitem.NewMenuItemManager(db)
 
 	app.Router = mux.NewRouter()
 
@@ -39,13 +43,136 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 }
 
 func (app *Application) InitialMigration(database *gorm.DB) error {
-	err := database.AutoMigrate(&user.User{})
+	err := database.AutoMigrate(&user.User{}, &menuitem.MenuItem{}, &menuitem.Ingredient{})
 	return err
 }
 
 func (app *Application) InitializeRoutes() {
+	// User routes
 	app.Router.HandleFunc("/register", app.Register).Methods("POST")
 	app.Router.HandleFunc("/login", app.Login).Methods("POST")
+
+	// Menu Item routes
+	app.Router.HandleFunc("/menuitem", app.GetMenuItems).Methods("GET")
+	app.Router.HandleFunc("/menuitem/{id}", app.GetMenuItem).Methods("GET")
+	app.Router.HandleFunc("/menuitem", app.CreateMenuItem).Methods("POST")
+	app.Router.HandleFunc("/menuitem/{id}", app.DeleteMenuItem).Methods("DELETE")
+}
+
+func (app *Application) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := menuitem.DeleteResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var deleteRequest menuitem.DeleteRequest
+	deleteRequest.Id = params["id"]
+
+	resp, err := menuItemManager.DeleteMenuItem(deleteRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+}
+
+func (app *Application) GetMenuItems(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := menuitem.GetResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp, err := menuItemManager.GetMenuItems()
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+}
+
+func (app *Application) GetMenuItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := menuitem.GetWithIDResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var getRequest menuitem.GetWithIDRequest
+	getRequest.Id = params["id"]
+
+	if err != nil {
+		resp := menuitem.GetWithIDResponse{
+			ErrorCode: 1,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp, err := menuItemManager.GetMenuItemWithID(getRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userId, err := app.authenticate(r)
+	if err != nil {
+		resp := menuitem.CreateResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	var createRequest menuitem.CreateRequest
+	json.NewDecoder(r.Body).Decode(&createRequest)
+
+	validate := validator.New()
+	err = validate.Struct(createRequest)
+
+	if err != nil {
+		resp := menuitem.CreateResponse{
+			ErrorCode: 1,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	createRequest.UserId = userId
+	resp, err := menuItemManager.CreateMenuItem(createRequest)
+
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
 }
 
 func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
@@ -100,6 +227,19 @@ func (app *Application) Register(w http.ResponseWriter, r *http.Request) {
 	resp := userManager.Register(registerRequest)
 
 	json.NewEncoder(w).Encode(resp)
+}
+
+func (app *Application) authenticate(r *http.Request) (id uint, err error) {
+	tkn, err := session.GetToken(r)
+	if err != nil {
+		return
+	}
+
+	id, err = session.VerifyToken(tkn)
+	if err != nil {
+		return
+	}
+	return
 }
 
 func (app *Application) Run() {
