@@ -48,12 +48,19 @@ func (m *MenuItemManagerImpl) GetMenuItemWithID(req GetWithIDRequest) (resp GetW
 }
 
 func (m *MenuItemManagerImpl) CreateMenuItem(req CreateRequest) (resp CreateResponse, err error) {
+	var ingredients []*Ingredient
+	for _, ingredient := range req.Ingredients {
+		ingredient := ingredient
+		ingredients = append(ingredients, &ingredient)
+	}
+
 	newMenuItem := &MenuItem{
 		Name:        req.Name,
 		Description: req.Description,
 		Price:       req.Price,
+		Steps:       req.Steps,
 		CreatedBy:   req.UserId,
-		Ingredients: req.Ingredients,
+		Ingredients: ingredients,
 	}
 
 	err = m.database.Create(&newMenuItem).Error
@@ -65,5 +72,25 @@ func (m *MenuItemManagerImpl) CreateMenuItem(req CreateRequest) (resp CreateResp
 }
 
 func (m *MenuItemManagerImpl) DeleteMenuItem(req DeleteRequest) (resp DeleteResponse, err error) {
+	var menuItem MenuItem
+	err = m.database.First(&menuItem, req.Id).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	err = m.database.Model(&menuItem).Association("Ingredients").Clear()
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	err = m.database.Delete(&menuItem, req.Id).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+	}
 	return
 }

@@ -56,6 +56,31 @@ func (app *Application) InitializeRoutes() {
 	app.Router.HandleFunc("/menuitem", app.GetMenuItems).Methods("GET")
 	app.Router.HandleFunc("/menuitem/{id}", app.GetMenuItem).Methods("GET")
 	app.Router.HandleFunc("/menuitem", app.CreateMenuItem).Methods("POST")
+	app.Router.HandleFunc("/menuitem/{id}", app.DeleteMenuItem).Methods("DELETE")
+}
+
+func (app *Application) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := menuitem.DeleteResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var deleteRequest menuitem.DeleteRequest
+	deleteRequest.Id = params["id"]
+
+	resp, err := menuItemManager.DeleteMenuItem(deleteRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
 }
 
 func (app *Application) GetMenuItems(w http.ResponseWriter, r *http.Request) {
