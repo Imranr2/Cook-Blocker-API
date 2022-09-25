@@ -63,7 +63,7 @@ func (m *UserManagerImpl) Login(req LoginRequest) (jwt session.Session, resp Log
 		resp.ErrorCode = 4
 		return
 	}
-	jwt, err = session.GenerateToken(req.Username)
+	jwt, err = session.GenerateToken(user.ID)
 
 	if err != nil {
 		resp.Error = err.Error()
