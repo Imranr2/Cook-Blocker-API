@@ -22,7 +22,11 @@ var userManager user.UserManager
 
 func (app *Application) Initialize(dbConfig database.DBConfig) {
 	db, err := getDB(dbConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	err = app.InitialMigration(db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,6 +36,11 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 	app.Router = mux.NewRouter()
 
 	app.InitializeRoutes()
+}
+
+func (app *Application) InitialMigration(database *gorm.DB) error {
+	err := database.AutoMigrate(&user.User{})
+	return err
 }
 
 func (app *Application) InitializeRoutes() {
@@ -56,7 +65,7 @@ func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwt, resp, err := userManager.Login(loginRequest)
+	jwt, resp := userManager.Login(loginRequest)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(err)
@@ -88,12 +97,7 @@ func (app *Application) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := userManager.Register(registerRequest)
-
-	if err != nil {
-		json.NewEncoder(w).Encode(err)
-		return
-	}
+	resp := userManager.Register(registerRequest)
 
 	json.NewEncoder(w).Encode(resp)
 }
