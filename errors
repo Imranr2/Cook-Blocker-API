@@ -1,0 +1,4 @@
+param error = 1
+authentication error = 2
+DB error = 3
+internal error = 4

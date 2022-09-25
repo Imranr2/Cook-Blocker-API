@@ -30,6 +30,19 @@ func (m *MenuItemManagerImpl) GetMenuItemWithID(req GetWithIDRequest) (resp GetW
 }
 
 func (m *MenuItemManagerImpl) CreateMenuItem(req CreateRequest) (resp CreateResponse, err error) {
+	newMenuItem := &MenuItem{
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+		CreatedBy:   req.UserId,
+		Ingredients: req.Ingredients,
+	}
+
+	err = m.database.Create(&newMenuItem).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+	}
 	return
 }
 

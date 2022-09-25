@@ -5,7 +5,7 @@ import "time"
 type User struct {
 	ID        uint      `gorm:"primaryKey"`
 	Username  string    `gorm:"index;unique;not null"`
-	Password  string    `gorm:"not null"`
+	Password  string    `json:"-" gorm:"not null"`
 	Name      string    `gorm:"not null"`
 	Role      string    `gorm:"not null"`
 	CreatedAt time.Time `gorm:"type:timestamp;default:current_timestamp"`

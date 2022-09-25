@@ -144,6 +144,7 @@ func (app *Application) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
 
 	createRequest.UserId = userId
 	resp, err := menuItemManager.CreateMenuItem(createRequest)
+
 	if err != nil {
 		log.Println(err)
 	}
