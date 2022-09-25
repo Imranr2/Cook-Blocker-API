@@ -91,11 +91,9 @@ func (app *Application) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	params := mux.Vars(r)
 	var getRequest menuitem.GetWithIDRequest
-	json.NewDecoder(r.Body).Decode(&getRequest)
-
-	validate := validator.New()
-	err = validate.Struct(getRequest)
+	getRequest.Id = params["id"]
 
 	if err != nil {
 		resp := menuitem.GetWithIDResponse{

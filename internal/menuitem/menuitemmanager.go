@@ -35,6 +35,15 @@ func (m *MenuItemManagerImpl) GetMenuItems() (resp GetResponse, err error) {
 }
 
 func (m *MenuItemManagerImpl) GetMenuItemWithID(req GetWithIDRequest) (resp GetWithIDResponse, err error) {
+	var menuItem MenuItem
+	err = m.database.Model(&MenuItem{}).Preload("Ingredients").First(&menuItem, req.Id).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	resp.MenuItem = menuItem
 	return
 }
 

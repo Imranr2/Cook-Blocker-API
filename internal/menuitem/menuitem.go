@@ -8,22 +8,22 @@ import (
 
 type MenuItem struct {
 	ID          uint         `json:"-" gorm:"primaryKey"`
-	Name        string       `gorm:"index;unique;not null"`
-	Description string       `gorm:"not null"`
-	Price       float32      `gorm:"not null"`
-	CreatedBy   uint         `gorm:"not null"`
-	Ingredients []Ingredient `gorm:"many2many:menu_item_ingredients"`
-	User        user.User    `gorm:"foreignKey:CreatedBy;not null"`
+	Name        string       `json:"name" gorm:"index;unique;not null"`
+	Description string       `json:"desc" gorm:"not null"`
+	Price       float32      `json:"price" gorm:"not null"`
+	CreatedBy   uint         `json:"createdBy" gorm:"not null"`
+	Ingredients []Ingredient `json:"ingredients" gorm:"many2many:menu_item_ingredients"`
+	User        user.User    `json:"-" gorm:"foreignKey:CreatedBy;not null"`
 	CreatedAt   time.Time    `json:"-" gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt   time.Time    `json:"-" gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
 }
 
 type GetWithIDRequest struct {
-	Id int `json:"id" validate:"required"`
+	Id string `json:"id" validate:"required"`
 }
 
 type GetWithIDResponse struct {
-	Item      MenuItem `json:"item"`
+	MenuItem  MenuItem `json:"menuItem"`
 	ErrorCode int      `json:"errorCode"`
 	Error     string   `json:"error"`
 }
