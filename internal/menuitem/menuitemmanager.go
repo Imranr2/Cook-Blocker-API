@@ -43,7 +43,7 @@ func (m *MenuItemManagerImpl) GetMenuItemWithID(req GetWithIDRequest) (resp GetW
 		return
 	}
 
-	resp.MenuItem = menuItem
+	resp.MenuItem = &menuItem
 	return
 }
 

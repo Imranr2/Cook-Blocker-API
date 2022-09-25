@@ -22,14 +22,31 @@ func NewOrderManager(database *gorm.DB) OrderManager {
 }
 
 func (m *OrderManagerImpl) GetOrders() (resp GetResponse, err error) {
+	var orders []Order
+	err = m.database.Model(&Order{}).Preload("OrderItems").Find(&orders).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
 	return
 }
 
 func (m *OrderManagerImpl) GetOrderWithID(req GetWithIDRequest) (resp GetWithIDResponse, err error) {
+	var order Order
+	err = m.database.Model(&Order{}).Preload("OrderItems").First(&order, req.ID).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	resp.Order = &order
 	return
 }
 
 func (m *OrderManagerImpl) CreateOrder(req CreateRequest) (resp CreateResponse, err error) {
+
 	return
 }
 

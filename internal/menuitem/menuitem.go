@@ -24,9 +24,9 @@ type GetWithIDRequest struct {
 }
 
 type GetWithIDResponse struct {
-	MenuItem  MenuItem `json:"menuItem"`
-	ErrorCode int      `json:"errorCode"`
-	Error     string   `json:"error"`
+	MenuItem  *MenuItem `json:"menuItem"`
+	ErrorCode int       `json:"errorCode"`
+	Error     string    `json:"error"`
 }
 
 type GetResponse struct {

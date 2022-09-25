@@ -34,7 +34,7 @@ type GetWithIDRequest struct {
 }
 
 type GetWithIDResponse struct {
-	Order     Order  `json:"order"`
+	Order     *Order `json:"order"`
 	ErrorCode int    `json:"errorCode"`
 	Error     string `json:"error"`
 }
