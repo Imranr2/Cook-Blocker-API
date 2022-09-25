@@ -64,5 +64,19 @@ func (m *OrderManagerImpl) CreateOrder(req CreateRequest) (resp CreateResponse, 
 }
 
 func (m *OrderManagerImpl) CompleteOrder(req CompleteRequest) (resp CompleteResponse, err error) {
+	var order Order
+	err = m.database.Model(&Order{}).Preload("OrderItems.MenuItem").First(&order, req.ID).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	err = m.database.Model(&order).Updates(Order{IsCompleted: true}).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
 	return
 }

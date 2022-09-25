@@ -71,7 +71,7 @@ func (app *Application) InitializeRoutes() {
 	app.Router.HandleFunc("/order", app.GetOrders).Methods("GET")
 	app.Router.HandleFunc("/order/{id}", app.GetOrderWithID).Methods("GET")
 	app.Router.HandleFunc("/order", app.CreateOrder).Methods("POST")
-	app.Router.HandleFunc("/order/{id}", app.CompleteOrder).Methods("UPDATE")
+	app.Router.HandleFunc("/order/{id}", app.CompleteOrder).Methods("PUT")
 }
 
 func (app *Application) GetOrders(w http.ResponseWriter, r *http.Request) {
