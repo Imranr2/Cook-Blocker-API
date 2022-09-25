@@ -4,10 +4,10 @@ import "time"
 
 type User struct {
 	ID        uint      `gorm:"primaryKey"`
-	Username  string    `json:"username" gorm:"index;unique;not null"`
-	Password  string    `json:"password" gorm:"not null"`
-	Name      string    `json:"name" gorm:"not null"`
-	Role      string    `json:"role" gorm:"not null"`
+	Username  string    `gorm:"index;unique;not null"`
+	Password  string    `gorm:"not null"`
+	Name      string    `gorm:"not null"`
+	Role      string    `gorm:"not null"`
 	CreatedAt time.Time `gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt time.Time `gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
 }
