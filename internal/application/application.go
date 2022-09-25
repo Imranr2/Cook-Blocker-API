@@ -8,6 +8,7 @@ import (
 
 	"github.com/Imanr2/Restaurant_API/internal/database"
 	"github.com/Imanr2/Restaurant_API/internal/menuitem"
+	"github.com/Imanr2/Restaurant_API/internal/order"
 	"github.com/Imanr2/Restaurant_API/internal/session"
 	"github.com/Imanr2/Restaurant_API/internal/user"
 	"github.com/go-playground/validator"
@@ -22,6 +23,7 @@ type Application struct {
 
 var userManager user.UserManager
 var menuItemManager menuitem.MenuItemManager
+var orderManager order.OrderManager
 
 func (app *Application) Initialize(dbConfig database.DBConfig) {
 	db, err := getDB(dbConfig)
@@ -36,6 +38,7 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 
 	userManager = user.NewUserManager(db)
 	menuItemManager = menuitem.NewMenuItemManager(db)
+	orderManager = order.NewOrderManager(db)
 
 	app.Router = mux.NewRouter()
 
@@ -43,7 +46,13 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 }
 
 func (app *Application) InitialMigration(database *gorm.DB) error {
-	err := database.AutoMigrate(&user.User{}, &menuitem.MenuItem{}, &menuitem.Ingredient{})
+	err := database.AutoMigrate(
+		&user.User{},
+		&menuitem.MenuItem{},
+		&menuitem.Ingredient{},
+		&order.Order{},
+		&order.OrderItem{},
+	)
 	return err
 }
 
@@ -57,6 +66,146 @@ func (app *Application) InitializeRoutes() {
 	app.Router.HandleFunc("/menuitem/{id}", app.GetMenuItem).Methods("GET")
 	app.Router.HandleFunc("/menuitem", app.CreateMenuItem).Methods("POST")
 	app.Router.HandleFunc("/menuitem/{id}", app.DeleteMenuItem).Methods("DELETE")
+
+	// Order routes
+	app.Router.HandleFunc("/order", app.GetOrders).Methods("GET")
+	app.Router.HandleFunc("/order/{id}", app.GetOrderWithID).Methods("GET")
+	app.Router.HandleFunc("/order", app.CreateOrder).Methods("POST")
+	app.Router.HandleFunc("/order/{id}", app.CompleteOrder).Methods("PUT")
+	app.Router.HandleFunc("/order/{id}", app.DeleteOrder).Methods("DELETE")
+}
+
+func (app *Application) GetOrders(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := order.GetResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp, err := orderManager.GetOrders()
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) GetOrderWithID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := order.GetWithIDResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var getRequest order.GetWithIDRequest
+	getRequest.ID = params["id"]
+
+	resp, err := orderManager.GetOrderWithID(getRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) CreateOrder(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userId, err := app.authenticate(r)
+	if err != nil {
+		resp := order.CreateResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	var createRequest order.CreateRequest
+	json.NewDecoder(r.Body).Decode(&createRequest)
+
+	validate := validator.New()
+	err = validate.Struct(createRequest)
+
+	if err != nil {
+		resp := order.CreateResponse{
+			ErrorCode: 1,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	createRequest.UserID = userId
+	resp, err := orderManager.CreateOrder(createRequest)
+
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) CompleteOrder(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := order.CompleteResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var completeRequest order.CompleteRequest
+	completeRequest.ID = params["id"]
+
+	resp, err := orderManager.CompleteOrder(completeRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) DeleteOrder(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := order.DeleteResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var deleteRequest order.DeleteRequest
+	deleteRequest.ID = params["id"]
+
+	resp, err := orderManager.DeleteOrder(deleteRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
 }
 
 func (app *Application) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
@@ -74,13 +223,14 @@ func (app *Application) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	var deleteRequest menuitem.DeleteRequest
-	deleteRequest.Id = params["id"]
+	deleteRequest.ID = params["id"]
 
 	resp, err := menuItemManager.DeleteMenuItem(deleteRequest)
 	if err != nil {
 		log.Println(err)
 	}
 	json.NewEncoder(w).Encode(resp)
+	return
 }
 
 func (app *Application) GetMenuItems(w http.ResponseWriter, r *http.Request) {
@@ -101,6 +251,7 @@ func (app *Application) GetMenuItems(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 	json.NewEncoder(w).Encode(resp)
+	return
 }
 
 func (app *Application) GetMenuItem(w http.ResponseWriter, r *http.Request) {
@@ -118,16 +269,7 @@ func (app *Application) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 
 	params := mux.Vars(r)
 	var getRequest menuitem.GetWithIDRequest
-	getRequest.Id = params["id"]
-
-	if err != nil {
-		resp := menuitem.GetWithIDResponse{
-			ErrorCode: 1,
-			Error:     err.Error(),
-		}
-		json.NewEncoder(w).Encode(resp)
-		return
-	}
+	getRequest.ID = params["id"]
 
 	resp, err := menuItemManager.GetMenuItemWithID(getRequest)
 	if err != nil {
@@ -165,7 +307,7 @@ func (app *Application) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createRequest.UserId = userId
+	createRequest.UserID = userId
 	resp, err := menuItemManager.CreateMenuItem(createRequest)
 
 	if err != nil {
@@ -205,6 +347,7 @@ func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 		Value:   jwt.TokenString,
 		Expires: jwt.ExpirationTime,
 	})
+	return
 }
 
 func (app *Application) Register(w http.ResponseWriter, r *http.Request) {
@@ -227,6 +370,7 @@ func (app *Application) Register(w http.ResponseWriter, r *http.Request) {
 	resp := userManager.Register(registerRequest)
 
 	json.NewEncoder(w).Encode(resp)
+	return
 }
 
 func (app *Application) authenticate(r *http.Request) (id uint, err error) {
