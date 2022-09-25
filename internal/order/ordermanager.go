@@ -83,5 +83,19 @@ func (m *OrderManagerImpl) CompleteOrder(req CompleteRequest) (resp CompleteResp
 }
 
 func (m *OrderManagerImpl) DeleteOrder(req DeleteRequest) (resp DeleteResponse, err error) {
+	var order Order
+	err = m.database.First(&order, req.ID).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	err = m.database.Select("OrderItems").Delete(&order, req.ID).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
 	return
 }
