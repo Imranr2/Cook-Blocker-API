@@ -22,6 +22,15 @@ func NewMenuItemManager(database *gorm.DB) MenuItemManager {
 }
 
 func (m *MenuItemManagerImpl) GetMenuItems() (resp GetResponse, err error) {
+	var menuItems []MenuItem
+	err = m.database.Model(&MenuItem{}).Preload("Ingredients").Find(&menuItems).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	resp.MenuItems = menuItems
 	return
 }
 

@@ -7,15 +7,15 @@ import (
 )
 
 type MenuItem struct {
-	ID          uint         `gorm:"primaryKey"`
+	ID          uint         `json:"-" gorm:"primaryKey"`
 	Name        string       `gorm:"index;unique;not null"`
 	Description string       `gorm:"not null"`
 	Price       float32      `gorm:"not null"`
 	CreatedBy   uint         `gorm:"not null"`
 	Ingredients []Ingredient `gorm:"many2many:menu_item_ingredients"`
 	User        user.User    `gorm:"foreignKey:CreatedBy;not null"`
-	CreatedAt   time.Time    `gorm:"type:timestamp;default:current_timestamp"`
-	UpdatedAt   time.Time    `gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
+	CreatedAt   time.Time    `json:"-" gorm:"type:timestamp;default:current_timestamp"`
+	UpdatedAt   time.Time    `json:"-" gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
 }
 
 type GetWithIDRequest struct {
