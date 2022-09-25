@@ -64,6 +64,69 @@ func (app *Application) InitializeRoutes() {
 	app.Router.HandleFunc("/menuitem/{id}", app.GetMenuItem).Methods("GET")
 	app.Router.HandleFunc("/menuitem", app.CreateMenuItem).Methods("POST")
 	app.Router.HandleFunc("/menuitem/{id}", app.DeleteMenuItem).Methods("DELETE")
+
+	// Order routes
+	app.Router.HandleFunc("/order", app.GetOrders).Methods("GET")
+	app.Router.HandleFunc("/order/{id}", app.GetOrderWithID).Methods("GET")
+	app.Router.HandleFunc("/order", app.CreateOrder).Methods("POST")
+	app.Router.HandleFunc("/order/{id}", app.CompleteOrder).Methods("UPDATE")
+}
+
+func (app *Application) GetOrders(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := order.GetResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+}
+
+func (app *Application) GetOrderWithID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := order.GetWithIDResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+}
+
+func (app *Application) CreateOrder(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := order.CreateResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+}
+
+func (app *Application) CompleteOrder(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := order.CompleteResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
 }
 
 func (app *Application) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
