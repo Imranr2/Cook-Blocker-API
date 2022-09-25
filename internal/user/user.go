@@ -1,10 +1,15 @@
 package user
 
+import "time"
+
 type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
-	Role     string `json:"role"`
+	ID        uint      `gorm:"primaryKey"`
+	Username  string    `json:"username" gorm:"index;unique;not null"`
+	Password  string    `json:"password" gorm:"not null"`
+	Name      string    `json:"name" gorm:"not null"`
+	Role      string    `json:"role" gorm:"not null"`
+	CreatedAt time.Time `gorm:"type:timestamp;default:current_timestamp"`
+	UpdatedAt time.Time `gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
 }
 
 type LoginRequest struct {
@@ -27,8 +32,4 @@ type RegisterRequest struct {
 type RegisterResponse struct {
 	ErrorCode int    `json:"errorCode"`
 	Error     string `json:"error"`
-}
-
-func (user *User) TableName() string {
-	return "user_tab"
 }

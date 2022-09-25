@@ -7,8 +7,8 @@ import (
 )
 
 type UserManager interface {
-	Register(RegisterRequest) (RegisterResponse, error)
-	Login(LoginRequest) (session.Session, LoginResponse, error)
+	Register(RegisterRequest) RegisterResponse
+	Login(LoginRequest) (session.Session, LoginResponse)
 }
 
 type UserManagerImpl struct {
@@ -21,7 +21,7 @@ func NewUserManager(database *gorm.DB) UserManager {
 	}
 }
 
-func (m *UserManagerImpl) Register(req RegisterRequest) (resp RegisterResponse, err error) {
+func (m *UserManagerImpl) Register(req RegisterRequest) (resp RegisterResponse) {
 	pwHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 
 	if err != nil {
@@ -41,12 +41,12 @@ func (m *UserManagerImpl) Register(req RegisterRequest) (resp RegisterResponse, 
 	if dbc.Error != nil {
 		resp.Error = dbc.Error.Error()
 		resp.ErrorCode = 1
-		return resp, dbc.Error
+		return
 	}
 	return
 }
 
-func (m *UserManagerImpl) Login(req LoginRequest) (jwt session.Session, resp LoginResponse, err error) {
+func (m *UserManagerImpl) Login(req LoginRequest) (jwt session.Session, resp LoginResponse) {
 	var user User
 	dbc := m.database.First(&user, User{Username: req.Username})
 
@@ -56,7 +56,7 @@ func (m *UserManagerImpl) Login(req LoginRequest) (jwt session.Session, resp Log
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 
 	if err != nil {
 		resp.Error = err.Error()
