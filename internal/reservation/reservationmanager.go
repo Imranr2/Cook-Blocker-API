@@ -63,6 +63,20 @@ func (m *ReservationManagerImpl) CreateReservation(req CreateRequest) (resp Crea
 }
 
 func (m *ReservationManagerImpl) FulfillReservation(req FulfillRequest) (resp FulfillResponse, err error) {
+	var reservation Reservation
+	err = m.database.Model(&Reservation{}).First(&reservation, req.ID).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	err = m.database.Model(&reservation).Updates(Reservation{IsCompleted: true}).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
 	return
 }
 
