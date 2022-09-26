@@ -10,6 +10,7 @@ import (
 	"github.com/Imanr2/Restaurant_API/internal/menuitem"
 	"github.com/Imanr2/Restaurant_API/internal/order"
 	"github.com/Imanr2/Restaurant_API/internal/session"
+	"github.com/Imanr2/Restaurant_API/internal/table"
 	"github.com/Imanr2/Restaurant_API/internal/user"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
@@ -52,6 +53,7 @@ func (app *Application) InitialMigration(database *gorm.DB) error {
 		&menuitem.Ingredient{},
 		&order.Order{},
 		&order.OrderItem{},
+		&table.Table{},
 	)
 	return err
 }
