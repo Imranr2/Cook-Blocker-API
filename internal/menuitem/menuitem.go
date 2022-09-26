@@ -13,7 +13,9 @@ type MenuItem struct {
 	Steps       string        `json:"steps" gorm:"not null"`
 	Price       float32       `json:"price" gorm:"not null"`
 	CreatedBy   uint          `json:"createdBy" gorm:"not null"`
+	ImageID     uint          `json:"-" gorm:"not null"`
 	Ingredients []*Ingredient `json:"ingredients" gorm:"many2many:menu_item_ingredients"`
+	Image       Image         `json:"image" gorm:"not null"`
 	User        user.User     `json:"-" gorm:"foreignKey:CreatedBy;not null"`
 	CreatedAt   time.Time     `json:"-" gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt   time.Time     `json:"-" gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
@@ -41,6 +43,7 @@ type CreateRequest struct {
 	Description string       `json:"desc" validate:"required"`
 	Price       float32      `json:"price" validate:"required"`
 	Steps       string       `json:"steps" validate:"required"`
+	Image       Image        `json:"image" validate:"required,dive"`
 	Ingredients []Ingredient `json:"ingredients" validate:"required,dive"`
 }
 

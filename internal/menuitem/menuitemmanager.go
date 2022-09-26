@@ -23,7 +23,7 @@ func NewMenuItemManager(database *gorm.DB) MenuItemManager {
 
 func (m *MenuItemManagerImpl) GetMenuItems() (resp GetResponse, err error) {
 	var menuItems []MenuItem
-	err = m.database.Model(&MenuItem{}).Preload("Ingredients").Find(&menuItems).Error
+	err = m.database.Model(&MenuItem{}).Preload("Ingredients").Preload("Image").Find(&menuItems).Error
 	if err != nil {
 		resp.Error = err.Error()
 		resp.ErrorCode = 3
@@ -36,7 +36,7 @@ func (m *MenuItemManagerImpl) GetMenuItems() (resp GetResponse, err error) {
 
 func (m *MenuItemManagerImpl) GetMenuItemWithID(req GetWithIDRequest) (resp GetWithIDResponse, err error) {
 	var menuItem MenuItem
-	err = m.database.Model(&MenuItem{}).Preload("Ingredients").First(&menuItem, req.ID).Error
+	err = m.database.Model(&MenuItem{}).Preload("Ingredients").Preload("Image").First(&menuItem, req.ID).Error
 	if err != nil {
 		resp.Error = err.Error()
 		resp.ErrorCode = 3
@@ -61,6 +61,7 @@ func (m *MenuItemManagerImpl) CreateMenuItem(req CreateRequest) (resp CreateResp
 		Steps:       req.Steps,
 		CreatedBy:   req.UserID,
 		Ingredients: ingredients,
+		Image:       req.Image,
 	}
 
 	err = m.database.Create(&newMenuItem).Error
