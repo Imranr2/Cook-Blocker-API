@@ -21,14 +21,31 @@ func NewReservationManager(database *gorm.DB) ReservationManager {
 }
 
 func (m *ReservationManagerImpl) GetReservations() (resp GetResponse, err error) {
+	var reservations []Reservation
+	err = m.database.Model(&Reservation{}).Find(&reservations).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+	resp.Reservations = reservations
 	return
 }
 
-func (m *ReservationManagerImpl) GetReservationWithID(GetWithIDRequest) (resp GetWithIDResponse, err error) {
+func (m *ReservationManagerImpl) GetReservationWithID(req GetWithIDRequest) (resp GetWithIDResponse, err error) {
+	var reservation Reservation
+	err = m.database.Model(&Reservation{}).First(&reservation, req.ID).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	resp.Reservation = &reservation
 	return
 }
 
-func (m *ReservationManagerImpl) CreateReservation(CreateRequest) (resp CreateResponse, err error) {
+func (m *ReservationManagerImpl) CreateReservation(req CreateRequest) (resp CreateResponse, err error) {
 	return
 }
 
