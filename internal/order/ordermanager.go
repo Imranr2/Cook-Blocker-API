@@ -49,7 +49,7 @@ func (m *OrderManagerImpl) GetOrderWithID(req GetWithIDRequest) (resp GetWithIDR
 
 func (m *OrderManagerImpl) CreateOrder(req CreateRequest) (resp CreateResponse, err error) {
 	newOrder := &Order{
-		TableID:     req.TableID,
+		TableNumber: req.TableNumber,
 		UserID:      req.UserID,
 		Price:       req.Price,
 		IsCompleted: false,
