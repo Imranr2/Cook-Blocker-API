@@ -4,16 +4,18 @@ import (
 	"time"
 
 	"github.com/Imanr2/Restaurant_API/internal/menuitem"
+	"github.com/Imanr2/Restaurant_API/internal/table"
 	"github.com/Imanr2/Restaurant_API/internal/user"
 )
 
 type Order struct {
 	ID          uint        `json:"-" gorm:"primaryKey"`
-	TableID     uint        `json:"tableId" gorm:"not null"` //TODO Add table model
+	TableID     uint        `json:"tableId" gorm:"not null"`
 	UserID      uint        `gorm:"not null"`
 	Price       float64     `json:"price" gorm:"not null"`
 	IsCompleted bool        `json:"isCompleted" gorm:"default:false"`
 	OrderItems  []OrderItem `json:"orderItems" gorm:"foreignKey:OrderID;not null"`
+	Table       table.Table `json:"table" gorm:"references:Number;not null"`
 	User        user.User   `json:"-" gorm:"foreignKey:UserID;not null"`
 	CreatedAt   time.Time   `json:"-" gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt   time.Time   `json:"-" gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
@@ -47,7 +49,7 @@ type GetResponse struct {
 
 type CreateRequest struct {
 	UserID     uint
-	TableID    uint        `json:"tableId" validate:"required"` //TODO Add table model
+	TableID    uint        `json:"tableId" validate:"required"`
 	Price      float64     `json:"price" validate:"required"`
 	OrderItems []OrderItem `json:"orderItems" validate:"required,dive"`
 }
