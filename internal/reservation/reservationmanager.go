@@ -46,6 +46,19 @@ func (m *ReservationManagerImpl) GetReservationWithID(req GetWithIDRequest) (res
 }
 
 func (m *ReservationManagerImpl) CreateReservation(req CreateRequest) (resp CreateResponse, err error) {
+	newReservation := &Reservation{
+		CustomerName:  req.CustomerName,
+		CustomerPhone: req.CustomerPhone,
+		TableNumber:   req.TableNumber,
+		IsCompleted:   false,
+		Pax:           req.Pax,
+	}
+
+	err = m.database.Create(&newReservation).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+	}
 	return
 }
 

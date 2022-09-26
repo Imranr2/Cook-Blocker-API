@@ -57,6 +57,7 @@ func (app *Application) InitialMigration(database *gorm.DB) error {
 		&order.Order{},
 		&order.OrderItem{},
 		&table.Table{},
+		&reservation.Reservation{},
 	)
 	return err
 }
