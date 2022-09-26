@@ -11,6 +11,7 @@ type Reservation struct {
 	CustomerName  string      `json:"customerName" gorm:"not null"`
 	CustomerPhone string      `json:"customerPhone" gorm:"not null"`
 	TableNumber   uint        `json:"tableNumber" gorm:"not null"`
+	IsCompleted   bool        `json:"isCompleted" gorm:"default:false"`
 	Pax           uint        `json:"pax" gorm:"not null"`
 	Table         table.Table `json:"-" gorm:"foreignKey:TableNumber;references:Number;not null"`
 	CreatedAt     time.Time   `json:"-" gorm:"type:timestamp;default:current_timestamp"`
