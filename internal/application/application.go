@@ -78,6 +78,144 @@ func (app *Application) InitializeRoutes() {
 	app.Router.HandleFunc("/order", app.CreateOrder).Methods("POST")
 	app.Router.HandleFunc("/order/{id}", app.CompleteOrder).Methods("PUT")
 	app.Router.HandleFunc("/order/{id}", app.DeleteOrder).Methods("DELETE")
+
+	// Reservation routes
+	app.Router.HandleFunc("/reservation", app.GetReservations).Methods("GET")
+	app.Router.HandleFunc("/reservation/{id}", app.GetReservationWithID).Methods("GET")
+	app.Router.HandleFunc("/reservation", app.CreateReservation).Methods("POST")
+	app.Router.HandleFunc("/reservation/{id}", app.FulfillReservation).Methods("PUT")
+	app.Router.HandleFunc("/reservation/{id}", app.DeleteReservation).Methods("DELETE")
+}
+
+func (app *Application) GetReservations(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := reservation.GetResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp, err := reservationManager.GetReservations()
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) GetReservationWithID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := reservation.GetWithIDResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var getRequest reservation.GetWithIDRequest
+	getRequest.ID = params["id"]
+
+	resp, err := reservationManager.GetReservationWithID(getRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) CreateReservation(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := reservation.CreateResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	var createRequest reservation.CreateRequest
+	json.NewDecoder(r.Body).Decode(&createRequest)
+
+	validate := validator.New()
+	err = validate.Struct(createRequest)
+
+	if err != nil {
+		resp := reservation.CreateResponse{
+			ErrorCode: 1,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp, err := reservationManager.CreateReservation(createRequest)
+
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) FulfillReservation(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := reservation.FulfillResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var completeRequest reservation.FulfillRequest
+	completeRequest.ID = params["id"]
+
+	resp, err := reservationManager.FulfillReservation(completeRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
+func (app *Application) DeleteReservation(w http.ResponseWriter, r *http.Request) {
+	_, err := app.authenticate(r)
+	if err != nil {
+		resp := reservation.DeleteResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	params := mux.Vars(r)
+	var deleteRequest reservation.DeleteRequest
+	deleteRequest.ID = params["id"]
+
+	resp, err := reservationManager.DeleteReservation(deleteRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
 }
 
 func (app *Application) GetOrders(w http.ResponseWriter, r *http.Request) {
@@ -191,6 +329,7 @@ func (app *Application) CompleteOrder(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	_, err := app.authenticate(r)
 	if err != nil {
 		resp := order.DeleteResponse{
