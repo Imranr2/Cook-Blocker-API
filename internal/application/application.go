@@ -54,6 +54,7 @@ func (app *Application) InitialMigration(database *gorm.DB) error {
 		&user.User{},
 		&menuitem.MenuItem{},
 		&menuitem.Ingredient{},
+		&menuitem.Image{},
 		&order.Order{},
 		&order.OrderItem{},
 		&table.Table{},
@@ -451,6 +452,8 @@ func (app *Application) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
+
+	fmt.Println("here")
 
 	createRequest.UserID = userId
 	resp, err := menuItemManager.CreateMenuItem(createRequest)
