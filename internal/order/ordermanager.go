@@ -9,7 +9,7 @@ type OrderManager interface {
 	GetOrderWithID(GetWithIDRequest) (GetWithIDResponse, error)
 	CreateOrder(CreateRequest) (CreateResponse, error)
 	CompleteOrder(CompleteRequest) (CompleteResponse, error)
-	DeleteOrder(DeleteRequest) (resp DeleteResponse, err error)
+	DeleteOrder(DeleteRequest) (DeleteResponse, error)
 }
 
 type OrderManagerImpl struct {

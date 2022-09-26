@@ -9,6 +9,7 @@ import (
 	"github.com/Imanr2/Restaurant_API/internal/database"
 	"github.com/Imanr2/Restaurant_API/internal/menuitem"
 	"github.com/Imanr2/Restaurant_API/internal/order"
+	"github.com/Imanr2/Restaurant_API/internal/reservation"
 	"github.com/Imanr2/Restaurant_API/internal/session"
 	"github.com/Imanr2/Restaurant_API/internal/table"
 	"github.com/Imanr2/Restaurant_API/internal/user"
@@ -25,6 +26,7 @@ type Application struct {
 var userManager user.UserManager
 var menuItemManager menuitem.MenuItemManager
 var orderManager order.OrderManager
+var reservationManager reservation.ReservationManager
 
 func (app *Application) Initialize(dbConfig database.DBConfig) {
 	db, err := getDB(dbConfig)
@@ -40,6 +42,7 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 	userManager = user.NewUserManager(db)
 	menuItemManager = menuitem.NewMenuItemManager(db)
 	orderManager = order.NewOrderManager(db)
+	reservationManager = reservation.NewReservationManager(db)
 
 	app.Router = mux.NewRouter()
 
