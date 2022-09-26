@@ -81,5 +81,19 @@ func (m *ReservationManagerImpl) FulfillReservation(req FulfillRequest) (resp Fu
 }
 
 func (m *ReservationManagerImpl) DeleteReservation(req DeleteRequest) (resp DeleteResponse, err error) {
+	var reservation Reservation
+	err = m.database.First(&reservation, req.ID).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+
+	err = m.database.Delete(&reservation, req.ID).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
 	return
 }
