@@ -14,6 +14,7 @@ import (
 	"github.com/Imanr2/Restaurant_API/internal/table"
 	"github.com/Imanr2/Restaurant_API/internal/user"
 	"github.com/go-playground/validator"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -511,6 +512,7 @@ func (app *Application) Register(w http.ResponseWriter, r *http.Request) {
 			ErrorCode: 1,
 			Error:     err.Error(),
 		}
+		fmt.Println(err.Error())
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
@@ -536,7 +538,10 @@ func (app *Application) authenticate(r *http.Request) (id uint, err error) {
 
 func (app *Application) Run() {
 	fmt.Println("application running")
-	log.Fatal(http.ListenAndServe("127.0.0.1:8000", app.Router))
+	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	origins := handlers.AllowedOrigins([]string{"http://localhost:3000"})
+	log.Fatal(http.ListenAndServe("127.0.0.1:8000", handlers.CORS(headers, methods, origins)(app.Router)))
 }
 
 func getDB(dbConfig database.DBConfig) (*gorm.DB, error) {
