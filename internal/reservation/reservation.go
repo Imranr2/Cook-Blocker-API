@@ -14,6 +14,7 @@ type Reservation struct {
 	IsCompleted   bool        `json:"isCompleted" gorm:"default:false"`
 	Pax           uint        `json:"pax" gorm:"not null"`
 	Table         table.Table `json:"-" gorm:"foreignKey:TableNumber;references:Number;not null"`
+	DateTime	  time.Time   `json:"date_time gorm:"type:timestamp; not null""`
 	CreatedAt     time.Time   `json:"-" gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt     time.Time   `json:"-" gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
 }
