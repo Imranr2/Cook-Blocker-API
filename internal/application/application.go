@@ -485,17 +485,15 @@ func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 
 	jwt, resp := userManager.Login(loginRequest)
 
-	if err != nil {
-		json.NewEncoder(w).Encode(err)
-		return
-	}
-
-	json.NewEncoder(w).Encode(resp)
 	http.SetCookie(w, &http.Cookie{
 		Name:    "token",
 		Value:   jwt.TokenString,
 		Expires: jwt.ExpirationTime,
+		Path: "/",
 	})
+	json.NewEncoder(w).Encode(resp)
+	
+	fmt.Println("cookie was set")
 	return
 }
 
@@ -538,10 +536,11 @@ func (app *Application) authenticate(r *http.Request) (id uint, err error) {
 
 func (app *Application) Run() {
 	fmt.Println("application running")
-	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	credentials := handlers.AllowCredentials()
+	headers := handlers.AllowedHeaders([]string{"Access-Control-Allow-Headers", "X-Requested-With", "Content-Type", "Authorization", "Accept"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
 	origins := handlers.AllowedOrigins([]string{"http://localhost:3000"})
-	log.Fatal(http.ListenAndServe("127.0.0.1:8000", handlers.CORS(headers, methods, origins)(app.Router)))
+	log.Fatal(http.ListenAndServe("127.0.0.1:8000", handlers.CORS(credentials, headers, methods, origins)(app.Router)))
 }
 
 func getDB(dbConfig database.DBConfig) (*gorm.DB, error) {
