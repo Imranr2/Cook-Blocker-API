@@ -70,5 +70,6 @@ func (m *UserManagerImpl) Login(req LoginRequest) (jwt session.Session, resp Log
 		resp.ErrorCode = 4
 		return
 	}
+	resp.User = user
 	return
 }

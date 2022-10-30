@@ -4,7 +4,7 @@ import "time"
 
 type User struct {
 	ID        uint      `json:"-" gorm:"primaryKey"`
-	Username  string    `json:"username" gorm:"index;unique;not null"`
+	Username  string    `json:"-" gorm:"index;unique;not null"`
 	Password  string    `json:"-" gorm:"not null"`
 	Name      string    `json:"name" gorm:"not null"`
 	Role      string    `json:"role" gorm:"not null"`
@@ -18,6 +18,7 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
+	User User `json:"user"`
 	ErrorCode int    `json:"errorCode"`
 	Error     string `json:"error"`
 }
