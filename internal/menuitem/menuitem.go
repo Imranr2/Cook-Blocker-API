@@ -52,6 +52,12 @@ type CreateResponse struct {
 	Error     string `json:"error"`
 }
 
+type SaveImageResponse struct {
+	ImageUrl string `json:"imageUrl"`
+	ErrorCode int    `json:"errorCode"`
+	Error     string `json:"error"`
+}
+
 type DeleteRequest struct {
 	ID string `json:"id" validate:"required"`
 }
