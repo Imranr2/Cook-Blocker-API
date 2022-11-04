@@ -14,7 +14,7 @@ type MenuItem struct {
 	Price       float32       `json:"price" gorm:"not null"`
 	CreatedBy   uint          `json:"createdBy" gorm:"not null"`
 	ImageID     uint          `json:"-" gorm:"not null"`
-	Ingredients []*Ingredient `json:"ingredients" gorm:"many2many:menu_item_ingredients"`
+	Ingredients []*Ingredient `json:"ingredients" gorm:"not null"`
 	Image       Image         `json:"image" gorm:"not null"`
 	User        user.User     `json:"-" gorm:"foreignKey:CreatedBy;not null"`
 	CreatedAt   time.Time     `json:"-" gorm:"type:timestamp;default:current_timestamp"`

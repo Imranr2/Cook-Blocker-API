@@ -11,10 +11,10 @@ import (
 type Order struct {
 	ID          uint        `json:"-" gorm:"primaryKey"`
 	TableNumber uint        `json:"tableNumber" gorm:"not null"`
-	UserID      uint        `gorm:"not null"`
+	UserID      uint        `json:"-" gorm:"not null"`
 	Price       float64     `json:"price" gorm:"not null"`
 	IsCompleted bool        `json:"isCompleted" gorm:"default:false"`
-	OrderItems  []OrderItem `json:"orderItems" gorm:"foreignKey:OrderID;not null"`
+	OrderItems  []OrderItem `json:"orderItems" gorm:"not null"`
 	Table       table.Table `json:"-" gorm:"foreignKey:TableNumber;references:Number;not null"`
 	User        user.User   `json:"-" gorm:"foreignKey:UserID;not null"`
 	CreatedAt   time.Time   `json:"-" gorm:"type:timestamp;default:current_timestamp"`
@@ -26,8 +26,8 @@ type OrderItem struct {
 	Qty        uint              `json:"qty" validate:"required" gorm:"not null"`
 	OrderID    uint              `json:"-" gorm:"not null"`
 	MenuItemID uint              `json:"menuItemId" gorm:"not null"`
-	Order	   Order	         `json:"order" gorm:"foreignKey:OrderID;not null"`
-	MenuItem   menuitem.MenuItem `json:"menuItem" gorm:"foreignKey:MenuItemID;not null"`
+	Order	   Order	         `json:"-" gorm:"not null"`
+	MenuItem   menuitem.MenuItem `json:"menuItem" gorm:"not null"`
 	CreatedAt  time.Time         `json:"-" gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt  time.Time         `json:"-" gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
 }
