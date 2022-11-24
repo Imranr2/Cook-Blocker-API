@@ -79,6 +79,7 @@ func (app *Application) InitializeRoutes() {
 	app.Router.HandleFunc("/menuitem/{id}", app.GetMenuItem).Methods("GET")
 	app.Router.HandleFunc("/menuitem", app.CreateMenuItem).Methods("POST")
 	app.Router.HandleFunc("/menuitem/{id}", app.DeleteMenuItem).Methods("DELETE")
+	app.Router.HandleFunc("/menuitem/{id}", app.UpdateMenuItem).Methods("PUT")
 	app.Router.HandleFunc("/menuitem/image", app.SaveImage).Methods("POST")
 
 	// Order routes
@@ -99,7 +100,7 @@ func (app *Application) InitializeRoutes() {
 func (app *Application) GetReservations(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := reservation.GetResponse{
 			ErrorCode: 2,
@@ -120,7 +121,7 @@ func (app *Application) GetReservations(w http.ResponseWriter, r *http.Request) 
 func (app *Application) GetReservationWithID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := reservation.GetWithIDResponse{
 			ErrorCode: 2,
@@ -145,7 +146,7 @@ func (app *Application) GetReservationWithID(w http.ResponseWriter, r *http.Requ
 func (app *Application) CreateReservation(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := reservation.CreateResponse{
 			ErrorCode: 2,
@@ -182,7 +183,7 @@ func (app *Application) CreateReservation(w http.ResponseWriter, r *http.Request
 func (app *Application) FulfillReservation(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := reservation.FulfillResponse{
 			ErrorCode: 2,
@@ -205,7 +206,7 @@ func (app *Application) FulfillReservation(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *Application) DeleteReservation(w http.ResponseWriter, r *http.Request) {
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := reservation.DeleteResponse{
 			ErrorCode: 2,
@@ -230,7 +231,7 @@ func (app *Application) DeleteReservation(w http.ResponseWriter, r *http.Request
 func (app *Application) GetOrders(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := order.GetResponse{
 			ErrorCode: 2,
@@ -251,7 +252,7 @@ func (app *Application) GetOrders(w http.ResponseWriter, r *http.Request) {
 func (app *Application) GetOrderWithID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := order.GetWithIDResponse{
 			ErrorCode: 2,
@@ -276,7 +277,7 @@ func (app *Application) GetOrderWithID(w http.ResponseWriter, r *http.Request) {
 func (app *Application) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	userId, err := app.authenticate(w,r)
+	userId, err := app.authenticate(w, r)
 	if err != nil {
 		resp := order.CreateResponse{
 			ErrorCode: 2,
@@ -314,7 +315,7 @@ func (app *Application) CreateOrder(w http.ResponseWriter, r *http.Request) {
 func (app *Application) CompleteOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := order.CompleteResponse{
 			ErrorCode: 2,
@@ -339,7 +340,7 @@ func (app *Application) CompleteOrder(w http.ResponseWriter, r *http.Request) {
 func (app *Application) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := order.DeleteResponse{
 			ErrorCode: 2,
@@ -364,7 +365,7 @@ func (app *Application) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 func (app *Application) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := menuitem.DeleteResponse{
 			ErrorCode: 2,
@@ -386,10 +387,48 @@ func (app *Application) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (app *Application) UpdateMenuItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(w, r)
+	if err != nil {
+		resp := menuitem.UpdateResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	var updateRequest menuitem.UpdateRequest
+	json.NewDecoder(r.Body).Decode(&updateRequest)
+	params := mux.Vars(r)
+	updateRequest.ID = params["id"]
+
+	validate := validator.New()
+	err = validate.Struct(updateRequest)
+
+	if err != nil {
+		resp := menuitem.UpdateResponse{
+			ErrorCode: 1,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp, err := menuItemManager.UpdateMenuItem(updateRequest)
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
+}
+
 func (app *Application) GetMenuItems(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := menuitem.GetResponse{
 			ErrorCode: 2,
@@ -410,7 +449,7 @@ func (app *Application) GetMenuItems(w http.ResponseWriter, r *http.Request) {
 func (app *Application) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	_, err := app.authenticate(w,r)
+	_, err := app.authenticate(w, r)
 	if err != nil {
 		resp := menuitem.GetWithIDResponse{
 			ErrorCode: 2,
@@ -434,7 +473,7 @@ func (app *Application) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	userId, err := app.authenticate(w,r)
+	userId, err := app.authenticate(w, r)
 
 	if err != nil {
 		resp := menuitem.CreateResponse{
@@ -444,7 +483,7 @@ func (app *Application) CreateMenuItem(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
-	
+
 	var createRequest menuitem.CreateRequest
 	json.NewDecoder(r.Body).Decode(&createRequest)
 
@@ -493,10 +532,10 @@ func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 		Name:    "token",
 		Value:   jwt.TokenString,
 		Expires: jwt.ExpirationTime,
-		Path: "/",
+		Path:    "/",
 	})
 	json.NewEncoder(w).Encode(resp)
-	
+
 	fmt.Println("cookie was set")
 	return
 }
@@ -540,7 +579,7 @@ func (app *Application) authenticate(w http.ResponseWriter, r *http.Request) (id
 		Name:    "token",
 		Value:   tkn,
 		Expires: time.Now().Add(5 * time.Minute),
-		Path: "/",
+		Path:    "/",
 	})
 	return
 }
@@ -559,7 +598,7 @@ func getDB(dbConfig database.DBConfig) (*gorm.DB, error) {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -571,18 +610,6 @@ func (app *Application) SaveImage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	file, handler, err := r.FormFile("image")
 
-    if err != nil {
-		resp := menuitem.SaveImageResponse{
-			ErrorCode: 4,
-			Error:     err.Error(),
-		}
-		json.NewEncoder(w).Encode(resp)
-		return
-    }
-
-    defer file.Close()
-    f, err := os.OpenFile("../images/" + handler.Filename, os.O_CREATE|os.O_WRONLY, 0644)
-    
 	if err != nil {
 		resp := menuitem.SaveImageResponse{
 			ErrorCode: 4,
@@ -590,9 +617,21 @@ func (app *Application) SaveImage(w http.ResponseWriter, r *http.Request) {
 		}
 		json.NewEncoder(w).Encode(resp)
 		return
-    }
+	}
 
-    defer f.Close()
+	defer file.Close()
+	f, err := os.OpenFile("../images/"+handler.Filename, os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		resp := menuitem.SaveImageResponse{
+			ErrorCode: 4,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	defer f.Close()
 	io.Copy(f, file)
 
 	resp := menuitem.SaveImageResponse{
