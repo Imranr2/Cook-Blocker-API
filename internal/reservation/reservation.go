@@ -7,14 +7,14 @@ import (
 )
 
 type Reservation struct {
-	ID            uint        `json:"-" gorm:"primaryKey"`
+	ID            uint        `json:"id" gorm:"primaryKey"`
 	CustomerName  string      `json:"customerName" gorm:"not null"`
 	CustomerPhone string      `json:"customerPhone" gorm:"not null"`
 	TableNumber   uint        `json:"tableNumber" gorm:"not null"`
 	IsCompleted   bool        `json:"isCompleted" gorm:"default:false"`
 	Pax           uint        `json:"pax" gorm:"not null"`
-	Table         table.Table `json:"-" gorm:"foreignKey:TableNumber;references:Number;not null"`
-	DateTime	  time.Time   `json:"date_time gorm:"type:timestamp; not null""`
+	Table         table.Table `json:"-" gorm:"foreignKey:TableNumber;not null"`
+	DateTime      time.Time   `json:"dateTime" gorm:"type:timestamp; not null""`
 	CreatedAt     time.Time   `json:"-" gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt     time.Time   `json:"-" gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
 }
@@ -36,10 +36,11 @@ type GetResponse struct {
 }
 
 type CreateRequest struct {
-	CustomerName  string `json:"customerName" validate:"required"`
-	CustomerPhone string `json:"customerPhone" validate:"required"`
-	TableNumber   uint   `json:"tableNumber" validate:"required"`
-	Pax           uint   `json:"pax" validate:"required"`
+	CustomerName  string    `json:"customerName" validate:"required"`
+	CustomerPhone string    `json:"customerPhone" validate:"required"`
+	TableNumber   uint      `json:"tableNumber" validate:"required"`
+	Pax           uint      `json:"pax" validate:"required"`
+	DateTime      time.Time `json:"dateTime" validate:"required"`
 }
 
 type CreateResponse struct {

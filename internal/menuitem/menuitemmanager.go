@@ -2,6 +2,7 @@ package menuitem
 
 import (
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type MenuItemManager interface {
@@ -9,6 +10,7 @@ type MenuItemManager interface {
 	GetMenuItemWithID(GetWithIDRequest) (GetWithIDResponse, error)
 	CreateMenuItem(CreateRequest) (CreateResponse, error)
 	DeleteMenuItem(DeleteRequest) (DeleteResponse, error)
+	UpdateMenuItem(UpdateRequest) (UpdateResponse, error)
 }
 
 type MenuItemManagerImpl struct {
@@ -81,17 +83,31 @@ func (m *MenuItemManagerImpl) DeleteMenuItem(req DeleteRequest) (resp DeleteResp
 		return
 	}
 
-	err = m.database.Model(&menuItem).Association("Ingredients").Clear()
+	err = m.database.Select(clause.Associations).Delete(&menuItem, req.ID).Error
+	if err != nil {
+		resp.Error = err.Error()
+		resp.ErrorCode = 3
+		return
+	}
+	return
+}
+
+func (m *MenuItemManagerImpl) UpdateMenuItem(req UpdateRequest) (resp UpdateResponse, err error) {
+	var menuItem MenuItem
+	err = m.database.Model(&MenuItem{}).Preload("Ingredients").Preload("Image").First(&menuItem, req.ID).Error
+
 	if err != nil {
 		resp.Error = err.Error()
 		resp.ErrorCode = 3
 		return
 	}
 
-	err = m.database.Delete(&menuItem, req.ID).Error
+	err = m.database.Model(&menuItem).Updates(MenuItem{Name: req.Name, Description: req.Description, Steps: req.Steps, Price: req.Price, Ingredients: req.Ingredients, Image: req.Image}).Error
+
 	if err != nil {
 		resp.Error = err.Error()
 		resp.ErrorCode = 3
+		return
 	}
 	return
 }

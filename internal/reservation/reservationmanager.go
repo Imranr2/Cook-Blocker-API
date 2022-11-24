@@ -52,6 +52,7 @@ func (m *ReservationManagerImpl) CreateReservation(req CreateRequest) (resp Crea
 		TableNumber:   req.TableNumber,
 		IsCompleted:   false,
 		Pax:           req.Pax,
+		DateTime:      req.DateTime,
 	}
 
 	err = m.database.Create(&newReservation).Error
