@@ -12,7 +12,7 @@ type TableManagerImpl struct {
 	database *gorm.DB
 }
 
-func newTableManager(database *gorm.DB) TableManager {
+func NewTableManager(database *gorm.DB) TableManager {
 	return &TableManagerImpl{
 		database: database,
 	}
