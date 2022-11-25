@@ -8,3 +8,9 @@ type Table struct {
 	CreatedAt time.Time `json:"-" gorm:"type:timestamp;default:current_timestamp"`
 	UpdatedAt time.Time `json:"-" gorm:"type:timestamp;default:current_timestamp ON update current_timestamp"`
 }
+
+type GetResponse struct {
+	Tables    []Table `json:"tables"`
+	ErrorCode int     `json:"errorCode"`
+	Error     string  `json:"error"`
+}
