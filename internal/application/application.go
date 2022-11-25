@@ -32,6 +32,7 @@ var userManager user.UserManager
 var menuItemManager menuitem.MenuItemManager
 var orderManager order.OrderManager
 var reservationManager reservation.ReservationManager
+var tableManager table.TableManager
 
 func (app *Application) Initialize(dbConfig database.DBConfig) {
 	db, err := getDB(dbConfig)
@@ -48,6 +49,7 @@ func (app *Application) Initialize(dbConfig database.DBConfig) {
 	menuItemManager = menuitem.NewMenuItemManager(db)
 	orderManager = order.NewOrderManager(db)
 	reservationManager = reservation.NewReservationManager(db)
+	tableManager = table.NewTableManager(db)
 
 	app.Router = mux.NewRouter()
 	fs := http.FileServer(http.Dir("../images"))
@@ -95,6 +97,30 @@ func (app *Application) InitializeRoutes() {
 	app.Router.HandleFunc("/reservation", app.CreateReservation).Methods("POST")
 	app.Router.HandleFunc("/reservation/{id}", app.FulfillReservation).Methods("PUT")
 	app.Router.HandleFunc("/reservation/{id}", app.DeleteReservation).Methods("DELETE")
+
+	// Table routes
+	app.Router.HandleFunc("/table", app.GetTables).Methods("GET")
+}
+
+func (app *Application) GetTables(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err := app.authenticate(w, r)
+	if err != nil {
+		resp := reservation.GetResponse{
+			ErrorCode: 2,
+			Error:     err.Error(),
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	resp, err := tableManager.GetTables()
+	if err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(resp)
+	return
 }
 
 func (app *Application) GetReservations(w http.ResponseWriter, r *http.Request) {
